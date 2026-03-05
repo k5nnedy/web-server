@@ -1,2 +1,2 @@
 # web-server
-simple webserver using websockets.
+simple http server.
