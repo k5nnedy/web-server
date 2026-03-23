@@ -3,11 +3,11 @@ import java.io.*;
 
 public class TestClient {
     public static void main(String[] args) {
-        try{
+        try(Socket socket = new Socket("localhost", 9806)){
 
             System.out.println("Client started");
             // creating socket on localhost because client and server are using the same machine
-            Socket socket = new Socket("localhost", 9806);
+            
             // Creating a buffered reader an entire string.
             // use input streamreader to read the byte stream (system.in) to give us a character stream
             BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));

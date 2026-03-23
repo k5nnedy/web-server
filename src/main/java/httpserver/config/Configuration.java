@@ -1,5 +1,5 @@
 package httpserver.config;
-
+// file that we are mapping the JSON config to
 public class Configuration {
     
     private int port;
