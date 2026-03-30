@@ -4,7 +4,7 @@ public class HttpParsingException extends Exception {
 
     private final HttpStausCode errorCode;
 
-    private HttpParsingException(HttpStausCode errorCode) {
+    public HttpParsingException(HttpStausCode errorCode) {
         super(errorCode.MESSAGE);
         this.errorCode = errorCode;
     }
