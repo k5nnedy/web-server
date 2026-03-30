@@ -1,4 +1,4 @@
 {
     "port":8080,
-    "webroot": "/Users/kennedy/web-server/WebRoot"
+    "webroot": "WebRoot"
 }
