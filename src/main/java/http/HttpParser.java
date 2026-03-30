@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,11 @@ public class HttpParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        parseHeaders(reader, req);
+        try {
+            parseHeaders(reader, req);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         parseBody(reader, req);
 
         return req;
@@ -103,11 +109,52 @@ public class HttpParser {
         
     }
 
-    private void parseHeaders(InputStreamReader reader, HttpRequest req) {
+    private void parseHeaders(InputStreamReader reader, HttpRequest req) throws IOException, HttpParsingException{
+        StringBuilder processingDataBuffer = new StringBuilder();
+        boolean crlffound = false;
+
+        int _byte;
+        while((_byte = reader.read()) >=0) { 
+            if (_byte == CR) {
+                _byte = reader.read();
+                if (_byte == LF) {
+                    if (!crlffound) {
+                        crlffound = true;
+
+                        processSingleHeaderField(processingDataBuffer, req);
+                        processingDataBuffer.delete(0, processingDataBuffer.length());
+                    } else {
+                        //Two CRLF received, end of Headers section
+                        return;
+                    }
+                } else {
+                    // If no line feed throw exception:
+                    throw new HttpParsingException(HttpStausCode.CLIENT_ERROR_400_BAD_REQUEST);
+                }
+            }   else {
+                //Appends to buffer
+                crlffound = false;
+                processingDataBuffer.append((char)_byte);
+
+            }
+        } 
+    }
+
+    private void processSingleHeaderField(StringBuilder processingDataBuffer, HttpRequest req) throws HttpParsingException {
+        String rawHeaderField = processingDataBuffer.toString();
+        Pattern pattern = Pattern.compile("^(?<fieldName>[!#$%&'*+\\-./^_`|\\w]+):\\s*(?<fieldValue>.*?\\S)?\\s*$");
         
+        Matcher matcher = pattern.matcher(rawHeaderField);
+        if(matcher.matches()) {
+            String fieldName = matcher.group("fieldName");
+            String fieldValue = matcher.group("fieldValue");
+            req.addHeader(fieldName, fieldValue);
+        } else {
+            throw new HttpParsingException(HttpStausCode.CLIENT_ERROR_400_BAD_REQUEST);
+        }
     }
 
     private void parseBody(InputStreamReader reader, HttpRequest req) {
-        
     }
+        
 }

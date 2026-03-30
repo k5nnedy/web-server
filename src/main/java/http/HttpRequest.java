@@ -8,6 +8,9 @@ package http;
 // that is unrecognized or not implemented by an origin server, the
 // origin server SHOULD respond with the 501 (Not Implemented) status code.
 
+import java.util.HashMap;
+import java.util.Set;
+
 // When a request method is received that is known by an origin
 // server but not allowed for the target resource, the origin server
 // SHOULD respond with the 405 (Method Not Allowed) status code.
@@ -33,8 +36,10 @@ public class HttpRequest extends HttpMessage {
     private String requestTarget;
     private String originalHttpVersion; // original literal we get from the request
     private HttpVersion bestCompatibleVersion;
+    private HashMap<String, String> headers; // storing headers in hashmap, header name = key, corresponding value = values
 
     HttpRequest(){
+        this.headers = new HashMap<>();
     }
 
     public HttpMethod getMethod() {
@@ -53,8 +58,14 @@ public class HttpRequest extends HttpMessage {
     public HttpVersion getBestCompatibleVersion() {
         return bestCompatibleVersion;
     }
-
     
+    public Set<String> getHeaderNames() {
+        return headers.keySet();
+    }
+
+    public String getHeader(String headerName) {
+        return headers.get(headerName.toLowerCase());
+    }
 
     void setMethod(String methodName) throws HttpParsingException {
         for (HttpMethod method: HttpMethod.values()) {
@@ -83,5 +94,12 @@ public class HttpRequest extends HttpMessage {
                 HttpStausCode.SERVER_ERROR_505_HTTP_VERSION_NOT_SUPPORTED
             );
         }
+    }
+
+    void addHeader(String headerName, String headerField) {
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
+        headers.put(headerName.toLowerCase(), headerField);
     }
 }
